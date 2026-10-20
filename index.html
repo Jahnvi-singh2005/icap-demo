@@ -964,7 +964,7 @@ document.getElementById('api-key-save').addEventListener('click', () => {
 });
 
 // ── Gemini streaming call ────────────────────────────────────────────────
-const GEMINI_MODEL = 'gemini-2.0-flash';
+const GEMINI_MODEL = 'gemini-3.6-flash';
 
 async function generateWithGemini(apiKey, promptText, onText) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:streamGenerateContent?alt=sse&key=${encodeURIComponent(apiKey)}`;
