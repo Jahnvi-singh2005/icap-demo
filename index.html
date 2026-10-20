@@ -29,7 +29,7 @@
   --shadow-card:      0 12px 32px rgb(79 49 61 / 8%);
 
   /* Semantic aliases */
-  --task-bg:          #FFF8E8;
+  --task-bg:          #FFEDB3;
   --task-bd:          #FFD84D;
   --res-bg:           #F0FDFB;
   --res-bd:           #43CFE5;
@@ -67,7 +67,7 @@
     --border-subtle:  #3A2510;
     --border-focus:   #6A8BFF;
     --shadow-card:    0 12px 32px rgb(0 0 0 / 35%);
-    --task-bg:        #2A1E04;
+    --task-bg:        #3D2808;
     --task-bd:        #FFDF70;
     --res-bg:         #041A18;
     --res-bd:         #60D8EA;
@@ -93,7 +93,7 @@
   --border-subtle:  #3A2510;
   --border-focus:   #6A8BFF;
   --shadow-card:    0 12px 32px rgb(0 0 0 / 35%);
-  --task-bg:        #2A1E04;
+  --task-bg:        #3D2808;
   --task-bd:        #FFDF70;
   --res-bg:         #041A18;
   --res-bd:         #60D8EA;
@@ -425,16 +425,44 @@ h1 .accent { color: var(--tangerine); }
 /* ── Scaffolded text output ─────────────────────────────────── */
 .s-section {
   margin-bottom: var(--space-8);
-  padding-bottom: var(--space-8);
+  padding: var(--space-6);
+  background: var(--bg-surface);
+  border: 1.5px solid var(--border-subtle);
+  border-top: 5px solid var(--electric-blue);
+  border-radius: 18px;
+  box-shadow: var(--shadow-card);
+}
+.s-section:last-child { margin-bottom: 0; }
+
+.s-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0 0 var(--space-4);
+  padding-bottom: var(--space-3);
   border-bottom: 1px solid var(--border-subtle);
 }
-.s-section:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+
+.s-num {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  height: 2rem;
+  padding: 0 .5rem;
+  border-radius: 999px;
+  background: var(--electric-blue);
+  color: #fff;
+  font-size: .8rem;
+  font-weight: 800;
+}
 
 .s-section h3 {
-  margin: 0 0 var(--space-4);
+  margin: 0;
   color: var(--text-primary);
   font-family: "Fraunces", Georgia, serif;
-  font-size: 1.15rem;
+  font-size: 1.2rem;
   font-weight: 800;
   line-height: 1.3;
 }
@@ -452,8 +480,12 @@ h1 .accent { color: var(--tangerine); }
 }
 
 .task-block {
+  margin-block: var(--space-6);
+  padding: var(--space-6);
   background: var(--task-bg);
-  border: 1.5px solid var(--task-bd);
+  border: 2px solid var(--task-bd);
+  border-left: 8px solid var(--tangerine);
+  box-shadow: 0 6px 18px rgb(255 121 61 / 22%);
 }
 
 .res-block {
@@ -469,17 +501,26 @@ h1 .accent { color: var(--tangerine); }
   margin-bottom: var(--space-2);
 }
 
-.task-block .blk-label { color: #8B6A00; }
+.task-block .blk-label {
+  display: inline-block;
+  margin-bottom: var(--space-3);
+  padding: .3rem .7rem;
+  border-radius: 999px;
+  background: var(--tangerine);
+  color: #2A1400;
+  font-size: .75rem;
+}
 .res-block  .blk-label { color: #0A6860; }
 
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .task-block .blk-label { color: var(--sunshine); }
+  :root:not([data-theme="light"]) .task-block .blk-label { color: #2A1400; }
   :root:not([data-theme="light"]) .res-block  .blk-label { color: var(--aqua); }
 }
-:root[data-theme="dark"] .task-block .blk-label { color: var(--sunshine); }
+:root[data-theme="dark"] .task-block .blk-label { color: #2A1400; }
 :root[data-theme="dark"] .res-block  .blk-label { color: var(--aqua); }
 
-.task-block p { margin: 0; font-style: italic; font-size: .9rem; line-height: 1.7; color: var(--text-primary); }
+.task-block p { margin: 0 0 var(--space-2); font-size: 1.02rem; font-weight: 600; line-height: 1.65; color: var(--text-primary); }
+.task-block p:last-child { margin-bottom: 0; }
 .res-body p  { margin-bottom: .4rem; font-size: .875rem; line-height: 1.8; color: var(--text-primary); }
 .res-body p:last-child { margin-bottom: 0; }
 .res-body ul, .res-body ol { padding-left: 1.3rem; margin-bottom: .4rem; }
@@ -1092,13 +1133,15 @@ function renderScaffold(text) {
     return `<div class="s-body">${blockMd(text)}</div>`;
   }
 
-  return chunks.map(chunk => {
+  return chunks.map((chunk, i) => {
     const headM = chunk.match(/^### (.+)/m);
     const title = headM ? headM[1].trim() : '';
     const body  = chunk.replace(/^### .+\n?/, '').trim();
 
-    const taskIdx = body.search(/^> /m);
-    const taskM   = body.match(/^> (.+)$/m);
+    // Task is the run of consecutive "> " lines, not just the first one
+    const taskIdx = body.search(/^>/m);
+    const taskM   = body.match(/^>.*(?:\n>.*)*/m);
+    const taskLines = taskM ? taskM[0].split('\n').map(l => l.replace(/^>\s?/, '').trim()).filter(Boolean) : [];
     const resIdx  = body.search(/\*\*Guided Resolution:\*\*/m);
     const resM    = body.match(/\*\*Guided Resolution:\*\*[ \t]*([\s\S]*)$/m);
 
@@ -1109,12 +1152,12 @@ function renderScaffold(text) {
     const resText = resM ? resM[1].trim() : '';
 
     let html = `<div class="s-section">`;
-    if (title) html += `<h3>${inlineMd(title)}</h3>`;
+    html += `<div class="s-head"><span class="s-num">${i + 1}</span>${title ? `<h3>${inlineMd(title)}</h3>` : ''}</div>`;
     if (preTask) html += `<div class="s-body">${blockMd(preTask)}</div>`;
-    if (taskM) {
+    if (taskLines.length) {
       html += `<div class="task-block">
-        <div class="blk-label">\u2726 Constructive Task</div>
-        <p>${inlineMd(taskM[1])}</p>
+        <div class="blk-label">\u270e Constructive Task</div>
+        <p>${taskLines.map(inlineMd).join('<br>')}</p>
       </div>`;
     }
     if (resText) {
